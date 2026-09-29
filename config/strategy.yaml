@@ -1,0 +1,20 @@
+audiences:
+  - website visitors seeking practical SEO growth
+locations:
+  - United States
+priority_offerings:
+  - seo
+conversions:
+  - lead_form
+approved_archetypes:
+  - service
+  - guide
+  - faq
+  - comparison
+excluded_paths:
+  - /admin
+proof_requirements:
+  - evidence reference
+change_limits:
+  max_files: 5
+  max_lines: 250

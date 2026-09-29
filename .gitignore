@@ -1,0 +1,13 @@
+.env
+.venv/
+.uv-cache/
+.uv-python/
+.pytest_cache/
+.test-tmp/
+.ruff_cache/
+.coverage
+__pycache__/
+*.pyc
+.superpowers/sdd/
+artifacts/
+*.db

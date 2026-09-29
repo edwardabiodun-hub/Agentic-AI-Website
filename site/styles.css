@@ -1,0 +1,5 @@
+:root { font-family: system-ui, sans-serif; color: #17202a; background: #f6f8fa; }
+body { margin: 0 auto; max-width: 70rem; padding: 3rem 1.5rem; }
+a { color: #0b5cad; }
+.card { background: white; border: 1px solid #d9e2ec; border-radius: 1rem; padding: 1.5rem; }
+.cta { display: inline-block; background: #0b5cad; color: white; border-radius: .5rem; padding: .75rem 1rem; text-decoration: none; }

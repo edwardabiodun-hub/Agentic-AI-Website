@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: seo_engine
+      POSTGRES_USER: seo
+      POSTGRES_PASSWORD: seo
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seo -d seo_engine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - seo_engine_pgdata:/var/lib/postgresql/data
+
+volumes:
+  seo_engine_pgdata:
