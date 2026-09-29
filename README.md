@@ -68,3 +68,26 @@ FastAPI exposes `GET /healthz` and `GET /runs/{run_id}`. Manual triggering remai
 - [MVP validation report](docs/operations/mvp-validation-report.md)
 
 The weekly automation creates artifacts and reviewable proposals. It does not merge PRs or issue a production deployment command. Vercel production deployment occurs through the repository's normal protected-branch Git integration after human approval.
+
+## RunRate Advisory application
+
+The repository also contains the RunRate Advisory website application in
+`app/`, with the Cloudflare Worker entrypoint in `worker/index.ts`, the
+database migrations in `drizzle/`, and the deployment bindings in
+`wrangler.jsonc`. The migration history includes `0007_happy_dust.sql`.
+Apply production D1 migrations with `npm run cf:migrate`
+only after reviewing the target account and database.
+
+The assessment retains complete answers, the report snapshot, generated PDF,
+and accepted AI/rules narrative in encrypted Cloudflare R2 storage for 90
+days. The next daily cleanup removes it, normally within 24 hours after the
+90-day mark. The cleanup schedule is 03:17 UTC. Compact D1 records and report objects
+follow the same 90-day retention policy, while the operational mailbox follows
+the same policy outside the application. Respondents can request deletion
+through the contact page or by contacting info@runrategroup.com.
+
+Assessment notifications may include the respondent's name, email, company,
+role, deterministic result, and accepted narrative. OpenAI receives no
+identity, raw answers, or prose; it receives only approved candidate block IDs.
+Narrative prose is not stored in D1. role-null records are rejected by the
+assessment record contract.

@@ -19,18 +19,22 @@ build output were intentionally excluded.
 
 ## Validation status
 
-The Cloudflare deployment configuration test passes. The current source
-checkout still references four analytics/admin modules that are not present in
-the source worktree or its reachable Git history:
+The Cloudflare deployment configuration and domain test suites pass. The
+analytics/admin contracts required by the imported routes are now implemented:
 
 - `lib/admin/access.ts`
 - `lib/analytics/site.ts`
 - `lib/analytics/site-track.ts`
 - `lib/analytics/site-aggregates.ts`
 
-Until those modules are restored or the related routes are completed, the
-production build and the analytics-dependent component tests will fail. No
-Cloudflare migration or deployment has been run.
+The production build passes, as do the full domain suite, rendered-HTML suite,
+and focused metrics/navigation component tests. The complete component suite
+still hits a Windows Node heap/allocation failure during a later assessment
+flow case; this is an environment/resource limitation rather than an asserted
+application failure. The default ESLint and Python test commands also need
+their repository cache/temp permissions cleaned up on Windows before they can
+be treated as clean CI gates. No Cloudflare migration or deployment has been
+run.
 
 ## Production decision still required
 
