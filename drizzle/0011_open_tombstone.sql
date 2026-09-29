@@ -1,0 +1,21 @@
+CREATE TABLE `site_analytics_events` (
+	`event_id` text PRIMARY KEY NOT NULL,
+	`event_name` text NOT NULL,
+	`occurred_at` text NOT NULL,
+	`anonymous_id` text NOT NULL,
+	`session_id` text NOT NULL,
+	`path` text NOT NULL,
+	`title` text,
+	`referrer` text,
+	`utm_source` text,
+	`utm_medium` text,
+	`utm_campaign` text,
+	`hostname` text,
+	`properties_json` text DEFAULT '{}' NOT NULL,
+	`duration_ms` real,
+	`status_code` integer,
+	`viewport` text,
+	`device_type` text,
+	`user_agent_family` text,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

@@ -1,0 +1,133 @@
+{
+  "zone": "runrategroup.com",
+  "hostnames": [
+    "www.runrategroup.com",
+    "runrategroup.com"
+  ],
+  "rulesets": {
+    "http_ratelimit": {
+      "name": "RunRate zone rate limits",
+      "kind": "zone",
+      "phase": "http_ratelimit",
+      "description": "RunRate Advisory edge rate limiting for high-risk application routes.",
+      "rules": [
+        {
+          "ref": "rr_sensitive_api_burst_5_per_10_seconds",
+          "description": "Free-plan edge burst guard: sensitive public write/report APIs, 5 requests per IP per 10 seconds",
+          "expression": "(http.request.uri.path eq \"/api/contact\" or http.request.uri.path eq \"/api/assessment/calculate\" or (starts_with(http.request.uri.path, \"/api/assessment/\") and (ends_with(http.request.uri.path, \"/narrative\") or ends_with(http.request.uri.path, \"/deliver\") or ends_with(http.request.uri.path, \"/report\"))))",
+          "action": "block",
+          "action_parameters": {
+            "response": {
+              "status_code": 429,
+              "content": "{\"error\":\"Too many requests. Please wait before retrying.\"}",
+              "content_type": "application/json"
+            }
+          },
+          "ratelimit": {
+            "characteristics": [
+              "cf.colo.id",
+              "ip.src"
+            ],
+            "period": 10,
+            "requests_per_period": 5,
+            "mitigation_timeout": 10
+          }
+        },
+        {
+          "ref": "rr_moderate_public_api_ip_10_per_min",
+          "description": "Plan-limited template: public assessment and analytics event endpoints, 10 requests per IP per minute; disabled because this zone permits one edge rate-limit rule",
+          "enabled": false,
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and (http.request.uri.path eq \"/api/assessment/events\" or http.request.uri.path eq \"/api/analytics/events\"))",
+          "action": "block",
+          "action_parameters": {
+            "response": {
+              "status_code": 429,
+              "content": "{\"error\":\"Too many requests. Please wait before retrying.\"}",
+              "content_type": "application/json"
+            }
+          },
+          "ratelimit": {
+            "characteristics": [
+              "cf.colo.id",
+              "ip.src"
+            ],
+            "period": 60,
+            "requests_per_period": 10,
+            "mitigation_timeout": 600
+          }
+        },
+        {
+          "ref": "rr_future_auth_strict_5_per_min_disabled_until_routes_exist",
+          "description": "Future auth strict template: login/reset/auth endpoints, 5 requests per IP per minute",
+          "enabled": false,
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and (http.request.uri.path in {\"/login\" \"/reset-password\"} or starts_with(http.request.uri.path, \"/api/v1/auth/\")))",
+          "action": "block",
+          "ratelimit": {
+            "characteristics": [
+              "cf.colo.id",
+              "ip.src"
+            ],
+            "period": 60,
+            "requests_per_period": 5,
+            "mitigation_timeout": 3600
+          }
+        },
+        {
+          "ref": "rr_future_registration_moderate_10_per_min_disabled_until_routes_exist",
+          "description": "Future auth moderate template: registration/token refresh, 10 requests per IP per minute",
+          "enabled": false,
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and (http.request.uri.path eq \"/register\" or http.request.uri.path contains \"/token\" or http.request.uri.path contains \"/refresh\"))",
+          "action": "block",
+          "ratelimit": {
+            "characteristics": [
+              "cf.colo.id",
+              "ip.src"
+            ],
+            "period": 60,
+            "requests_per_period": 10,
+            "mitigation_timeout": 1800
+          }
+        }
+      ]
+    },
+    "http_request_firewall_custom": {
+      "name": "RunRate custom WAF and bot controls",
+      "kind": "zone",
+      "phase": "http_request_firewall_custom",
+      "description": "RunRate Advisory custom edge WAF, bot controls, and route hardening.",
+      "rules": [
+        {
+          "ref": "rr_challenge_admin_missing_access_email_defense_in_depth",
+          "description": "Defense-in-depth: challenge direct admin requests missing Cloudflare Access authenticated email header",
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and starts_with(http.request.uri.path, \"/admin/\") and not http.request.headers[\"cf-access-authenticated-user-email\"][0] contains \"@runrategroup.com\")",
+          "action": "managed_challenge"
+        },
+        {
+          "ref": "rr_log_sqli_signals",
+          "description": "Log likely SQL injection patterns in query string or URI path",
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and not (starts_with(http.request.uri.path, \"/_next/\") or starts_with(http.request.uri.path, \"/static/\") or starts_with(http.request.uri.path, \"/assets/\") or starts_with(http.request.uri.path, \"/images/\") or ends_with(http.request.uri.path, \".css\") or ends_with(http.request.uri.path, \".js\") or ends_with(http.request.uri.path, \".mjs\") or ends_with(http.request.uri.path, \".map\") or ends_with(http.request.uri.path, \".png\") or ends_with(http.request.uri.path, \".jpg\") or ends_with(http.request.uri.path, \".jpeg\") or ends_with(http.request.uri.path, \".gif\") or ends_with(http.request.uri.path, \".webp\") or ends_with(http.request.uri.path, \".svg\") or ends_with(http.request.uri.path, \".ico\") or ends_with(http.request.uri.path, \".woff\") or ends_with(http.request.uri.path, \".woff2\") or ends_with(http.request.uri.path, \".ttf\") or ends_with(http.request.uri.path, \".otf\") or ends_with(http.request.uri.path, \".mp4\") or ends_with(http.request.uri.path, \".webm\") or ends_with(http.request.uri.path, \".pdf\")) and (lower(http.request.uri.query) contains \"union select\" or lower(http.request.uri.query) contains \"union%20select\" or lower(http.request.uri.query) contains \" or 1=1\" or lower(http.request.uri.query) contains \"or%201%3d1\" or lower(http.request.uri.query) contains \"' or '1'='1\" or lower(http.request.uri.query) contains \"%27%20or%20%271%27%3d%271\" or lower(http.request.uri.query) contains \"information_schema\" or lower(http.request.uri.path) contains \"union select\" or lower(http.request.uri.path) contains \"union%20select\"))",
+          "action": "managed_challenge"
+        },
+        {
+          "ref": "rr_log_xss_signals",
+          "description": "Log likely XSS payloads in query string or URI path",
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and not (starts_with(http.request.uri.path, \"/_next/\") or starts_with(http.request.uri.path, \"/static/\") or starts_with(http.request.uri.path, \"/assets/\") or starts_with(http.request.uri.path, \"/images/\") or ends_with(http.request.uri.path, \".css\") or ends_with(http.request.uri.path, \".js\") or ends_with(http.request.uri.path, \".mjs\") or ends_with(http.request.uri.path, \".map\") or ends_with(http.request.uri.path, \".png\") or ends_with(http.request.uri.path, \".jpg\") or ends_with(http.request.uri.path, \".jpeg\") or ends_with(http.request.uri.path, \".gif\") or ends_with(http.request.uri.path, \".webp\") or ends_with(http.request.uri.path, \".svg\") or ends_with(http.request.uri.path, \".ico\") or ends_with(http.request.uri.path, \".woff\") or ends_with(http.request.uri.path, \".woff2\") or ends_with(http.request.uri.path, \".ttf\") or ends_with(http.request.uri.path, \".otf\") or ends_with(http.request.uri.path, \".mp4\") or ends_with(http.request.uri.path, \".webm\") or ends_with(http.request.uri.path, \".pdf\")) and (lower(http.request.uri.query) contains \"<script\" or lower(http.request.uri.query) contains \"%3cscript\" or lower(http.request.uri.query) contains \"javascript:\" or lower(http.request.uri.query) contains \"javascript%3a\" or lower(http.request.uri.query) contains \"onload=\" or lower(http.request.uri.query) contains \"onload%3d\" or lower(http.request.uri.query) contains \"onerror=\" or lower(http.request.uri.query) contains \"onerror%3d\" or lower(http.request.uri.path) contains \"%3cscript\"))",
+          "action": "managed_challenge"
+        },
+        {
+          "ref": "rr_log_lfi_path_traversal_signals",
+          "description": "Log likely path traversal/LFI attempts",
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and not (starts_with(http.request.uri.path, \"/_next/\") or starts_with(http.request.uri.path, \"/static/\") or starts_with(http.request.uri.path, \"/assets/\") or starts_with(http.request.uri.path, \"/images/\") or ends_with(http.request.uri.path, \".css\") or ends_with(http.request.uri.path, \".js\") or ends_with(http.request.uri.path, \".mjs\") or ends_with(http.request.uri.path, \".map\") or ends_with(http.request.uri.path, \".png\") or ends_with(http.request.uri.path, \".jpg\") or ends_with(http.request.uri.path, \".jpeg\") or ends_with(http.request.uri.path, \".gif\") or ends_with(http.request.uri.path, \".webp\") or ends_with(http.request.uri.path, \".svg\") or ends_with(http.request.uri.path, \".ico\") or ends_with(http.request.uri.path, \".woff\") or ends_with(http.request.uri.path, \".woff2\") or ends_with(http.request.uri.path, \".ttf\") or ends_with(http.request.uri.path, \".otf\") or ends_with(http.request.uri.path, \".mp4\") or ends_with(http.request.uri.path, \".webm\") or ends_with(http.request.uri.path, \".pdf\")) and (http.request.uri.path contains \"../\" or lower(http.request.uri.path) contains \"..%2f\" or lower(http.request.uri.path) contains \"%2e%2e%2f\" or lower(http.request.uri.path) contains \"/etc/passwd\" or lower(http.request.uri.query) contains \"../\" or lower(http.request.uri.query) contains \"..%2f\" or lower(http.request.uri.query) contains \"/etc/passwd\"))",
+          "action": "managed_challenge"
+        },
+        {
+          "ref": "rr_bot_challenge_sensitive_routes_score_lt_30_disabled_until_plan_confirmed",
+          "description": "Optional: managed challenge likely bots on sensitive public routes when Bot Management is available",
+          "enabled": false,
+          "expression": "(http.host in {\"www.runrategroup.com\" \"runrategroup.com\"} and cf.bot_management.score lt 30 and not cf.client.bot and (http.request.uri.path eq \"/api/contact\" or http.request.uri.path eq \"/api/assessment/calculate\" or http.request.uri.path eq \"/assessment\" or starts_with(http.request.uri.path, \"/admin/\")))",
+          "action": "managed_challenge"
+        }
+      ]
+    }
+  }
+}

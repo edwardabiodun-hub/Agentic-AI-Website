@@ -11,3 +11,26 @@ __pycache__/
 .superpowers/sdd/
 artifacts/
 *.db
+
+# Node / Next / Vinext / Cloudflare build output
+node_modules/
+.next/
+.vinext/
+dist/
+out/
+.wrangler/
+.vercel/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Local environment files (keep the example template)
+.env*
+!.env.example
+
+# Local project logs and scratch output
+.dev-server.*.log
+tmp/
+outputs/
+work/

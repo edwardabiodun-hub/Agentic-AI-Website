@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785070142412,
+      "tag": "0001_assessment_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785072938918,
+      "tag": "0002_kind_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785075398817,
+      "tag": "0003_nosy_puppet_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785081535428,
+      "tag": "0004_marvelous_red_shift",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1785368922540,
+      "tag": "0005_striped_wilson_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1785386454658,
+      "tag": "0006_lethal_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1785412973610,
+      "tag": "0007_happy_dust",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1785458684978,
+      "tag": "0008_full_report_snapshots",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1785697884218,
+      "tag": "0009_slimy_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1785775805034,
+      "tag": "0011_open_tombstone",
+      "breakpoints": true
+    }
+  ]
+}

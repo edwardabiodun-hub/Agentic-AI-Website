@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "runrate-advisory",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": false
+  },
+  "routes": [
+    {
+      "pattern": "www.runrategroup.com",
+      "zone_name": "runrategroup.com",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "ADMIN_EMAIL": "edward.abiodun@runrategroup.com",
+    "NEXT_PUBLIC_SITE_URL": "https://www.runrategroup.com"
+  },
+  "images": {
+    "binding": "IMAGES"
+  },
+  "r2_buckets": [
+    {
+      "binding": "REPORTS",
+      "bucket_name": "runrate-advisory-reports"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "runrate-advisory-production",
+      "database_id": "b6f4f578-0064-4c60-9928-c28adbaf4847",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "triggers": {
+    "crons": ["17 3 * * *"]
+  },
+  "ratelimits": [
+    {
+      "name": "NARRATIVE_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 3, "period": 60 }
+    },
+    {
+      "name": "ASSESSMENT_CALCULATION_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "NARRATIVE_GLOBAL_RATE_LIMITER",
+      "namespace_id": "1003",
+      "simple": { "limit": 20, "period": 60 }
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
