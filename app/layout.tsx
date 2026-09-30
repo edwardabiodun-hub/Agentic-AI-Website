@@ -5,6 +5,7 @@ import { BackToTop } from "../components/SiteParts";
 import { Logo } from "../components/Logo";
 import { NavMenu } from "../components/NavMenu";
 import { SiteAnalyticsTracker } from "../components/SiteAnalyticsTracker";
+import { GoogleAnalytics } from "../components/GoogleAnalytics";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={spaceGrotesk.variable}>
         <div id="top" />
         <SiteAnalyticsTracker />
+        <GoogleAnalytics />
         <header className="site-header">
           <Logo />
           <nav aria-label="Primary navigation">
