@@ -6,6 +6,7 @@ import { Logo } from "../components/Logo";
 import { NavMenu } from "../components/NavMenu";
 import { SiteAnalyticsTracker } from "../components/SiteAnalyticsTracker";
 import { GoogleAnalytics } from "../components/GoogleAnalytics";
+import { MicrosoftClarity } from "../components/MicrosoftClarity";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -111,6 +112,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <div id="top" />
         <SiteAnalyticsTracker />
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <header className="site-header">
           <Logo />
           <nav aria-label="Primary navigation">
