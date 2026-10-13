@@ -2,10 +2,12 @@ import Script from "next/script";
 
 const configuredProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
 const projectId = /^[a-z0-9]+$/i.test(configuredProjectId ?? "")
-  ? configuredProjectId!
-  : "yq6mx7qz2f";
+  ? configuredProjectId
+  : undefined;
 
 export function MicrosoftClarity() {
+  if (!projectId) return null;
+
   return (
     <Script id="microsoft-clarity" strategy="afterInteractive">
       {`

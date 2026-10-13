@@ -2,10 +2,12 @@ import Script from "next/script";
 
 const configuredMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const measurementId = /^G-[A-Z0-9]+$/.test(configuredMeasurementId ?? "")
-  ? configuredMeasurementId!
-  : "G-VPP81LYJ0Y";
+  ? configuredMeasurementId
+  : undefined;
 
 export function GoogleAnalytics() {
+  if (!measurementId) return null;
+
   return (
     <>
       <Script
