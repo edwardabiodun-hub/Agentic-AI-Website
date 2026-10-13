@@ -13,6 +13,11 @@ on:
         description: "Optional inclusive end date (YYYY-MM-DD)"
         required: false
         type: string
+      fixture:
+        description: "Use deterministic fixtures instead of live provider APIs"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -33,6 +38,17 @@ jobs:
       - run: uv run alembic upgrade head
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Prepare Google service-account credentials
+        shell: bash
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICE_ACCOUNT_JSON" ]; then
+            credential_path="$RUNNER_TEMP/google-service-account.json"
+            printf '%s' "$GOOGLE_SERVICE_ACCOUNT_JSON" > "$credential_path"
+            chmod 600 "$credential_path"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$credential_path" >> "$GITHUB_ENV"
+          fi
       - name: Run weekly intelligence cycle
         shell: bash
         env:
@@ -41,14 +57,25 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
           GSC_PROPERTY: ${{ vars.GSC_PROPERTY }}
           GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+          SEO_KEYWORDS: ${{ vars.SEO_KEYWORDS }}
+          DATAFORSEO_LOCATION_CODE: ${{ vars.DATAFORSEO_LOCATION_CODE }}
+          DATAFORSEO_LANGUAGE_CODE: ${{ vars.DATAFORSEO_LANGUAGE_CODE }}
+          DATAFORSEO_DEVICE: ${{ vars.DATAFORSEO_DEVICE }}
           CLARITY_PROJECT_ID: ${{ vars.CLARITY_PROJECT_ID }}
           CLARITY_API_TOKEN: ${{ secrets.CLARITY_API_TOKEN }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
         run: |
+          args=()
           if [ -n "${{ inputs.end_date }}" ]; then
-            uv run seo-engine run-weekly --run-date "${{ inputs.end_date }}"
+            args+=(--run-date "${{ inputs.end_date }}")
+          fi
+          if [ "${{ inputs.fixture }}" = "true" ]; then
+            args+=(--fixture)
+          fi
+          if [ "${{ inputs.fixture }}" = "true" ] || [ -n "${{ inputs.end_date }}" ]; then
+            uv run seo-engine run-weekly "${args[@]}"
           else
             uv run seo-engine run-weekly
           fi

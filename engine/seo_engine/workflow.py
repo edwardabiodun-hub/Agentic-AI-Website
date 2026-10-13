@@ -8,6 +8,11 @@ from pathlib import Path
 from uuid import UUID
 
 from seo_engine.briefs import build_brief, render_brief_markdown
+from seo_engine.config import Settings
+from seo_engine.connectors.clarity import ClarityConnector
+from seo_engine.connectors.dataforseo import DataForSEOConnector
+from seo_engine.connectors.firecrawl import FirecrawlConnector
+from seo_engine.connectors.ga4 import GA4Connector
 from seo_engine.connectors.gsc import GSCConnector
 from seo_engine.diagnostics import (
     DiagnosticConfig,
@@ -17,6 +22,7 @@ from seo_engine.diagnostics import (
 )
 from seo_engine.domain.models import CollectionResult, DateWindow, RunSummary, SiteScope, Strategy
 from seo_engine.domain.ports import DataConnector
+from seo_engine.google_auth import GA4_SCOPE, GSC_SCOPE, service_account_credentials
 from seo_engine.persistence.db import create_persistent_session
 from seo_engine.persistence.repositories import ObservationRepository, RunRepository
 
@@ -72,12 +78,10 @@ async def collect_all(
 
 
 async def run_weekly(
-    settings,
+    settings: Settings,
     run_date: date | None = None,
     fixture_mode: bool = False,
 ) -> RunSummary:
-    if not fixture_mode:
-        raise RuntimeError("live mode requires configured provider credentials and a database")
     target_date = run_date or date.today()
     window = DateWindow(start=target_date - timedelta(days=6), end=target_date)
     scope = SiteScope(
@@ -86,26 +90,35 @@ async def run_weekly(
         target_root=Path(settings.target_site_root),
         base_branch=settings.github_base_branch,
     )
-    connector = GSCConnector(
-        payload={
-            "rows": [
-                {
-                    "keys": ["seo service", "/pages/example-service.html"],
-                    "clicks": 20,
-                    "impressions": 500,
-                    "ctr": 0.04,
-                    "position": 9.5,
+    if fixture_mode:
+        connectors: list[DataConnector] = [
+            GSCConnector(
+                payload={
+                    "rows": [
+                        {
+                            "keys": ["seo service", "/pages/example-service.html"],
+                            "clicks": 20,
+                            "impressions": 500,
+                            "ctr": 0.04,
+                            "position": 9.5,
+                        }
+                    ]
                 }
-            ]
-        }
-    )
-    fixture_database = Path("artifacts/fixture.sqlite")
-    fixture_database.parent.mkdir(parents=True, exist_ok=True)
-    async with create_persistent_session(
-        f"sqlite+aiosqlite:///{fixture_database.as_posix()}"
-    ) as session:
+            )
+        ]
+        database_url = "sqlite+aiosqlite:///artifacts/fixture.sqlite"
+    else:
+        connectors = _build_live_connectors(settings)
+        database_url = settings.database_url
+
+    if database_url.startswith("sqlite+aiosqlite:///"):
+        Path(database_url.removeprefix("sqlite+aiosqlite:///" )).parent.mkdir(
+            parents=True, exist_ok=True
+        )
+
+    async with create_persistent_session(database_url) as session:
         summary = await collect_all(
-            [connector],
+            connectors,
             window,
             scope,
             RunRepository(session),
@@ -131,3 +144,60 @@ async def run_weekly(
         briefs=brief_count,
         errors=summary.errors,
     )
+
+
+def _build_live_connectors(settings: Settings) -> list[DataConnector]:
+    google_credentials = None
+    if settings.gsc_property or settings.ga4_property_id:
+        try:
+            google_credentials = service_account_credentials(
+                settings, [GSC_SCOPE, GA4_SCOPE]
+            )
+        except Exception:
+            # The individual connectors report the missing credential as a
+            # provider-level failure, allowing the rest of the weekly run to
+            # produce useful partial evidence.
+            google_credentials = None
+
+    keywords = [item.strip() for item in settings.seo_keywords.split(",") if item.strip()]
+    return [
+        GSCConnector(
+            property_name=settings.gsc_property,
+            credentials=google_credentials,
+        ),
+        GA4Connector(
+            property_id=settings.ga4_property_id,
+            credentials=google_credentials,
+        ),
+        ClarityConnector(
+            project_id=settings.clarity_project_id,
+            api_token=(
+                settings.clarity_api_token.get_secret_value()
+                if settings.clarity_api_token
+                else ""
+            ),
+        ),
+        FirecrawlConnector(
+            api_key=(
+                settings.firecrawl_api_key.get_secret_value()
+                if settings.firecrawl_api_key
+                else ""
+            ),
+        ),
+        DataForSEOConnector(
+            login=(
+                settings.dataforseo_login.get_secret_value()
+                if settings.dataforseo_login
+                else ""
+            ),
+            password=(
+                settings.dataforseo_password.get_secret_value()
+                if settings.dataforseo_password
+                else ""
+            ),
+            keywords=keywords,
+            location_code=settings.dataforseo_location_code,
+            language_code=settings.dataforseo_language_code,
+            device=settings.dataforseo_device,
+        ),
+    ]
