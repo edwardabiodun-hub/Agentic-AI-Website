@@ -12,3 +12,8 @@ test("Microsoft Clarity loads the configured project tag from the shared layout"
   assert.match(component, /clarity/);
   assert.match(layout, /<MicrosoftClarity\s*\/>/);
 });
+
+test("Microsoft Clarity does not fall back to a previous site ID", () => {
+  assert.match(component, /if\s*\(!projectId\)\s*return\s+null/);
+  assert.doesNotMatch(component, /yq6mx7qz2f/);
+});

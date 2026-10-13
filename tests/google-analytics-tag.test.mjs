@@ -12,3 +12,8 @@ test("Google Analytics loads the configured gtag script from the shared layout",
   assert.match(component, /gtag\('config'/);
   assert.match(layout, /<GoogleAnalytics\s*\/>/);
 });
+
+test("Google Analytics does not fall back to a previous site ID", () => {
+  assert.match(component, /if\s*\(!measurementId\)\s*return\s+null/);
+  assert.doesNotMatch(component, /G-VPP81LYJ0Y/);
+});
