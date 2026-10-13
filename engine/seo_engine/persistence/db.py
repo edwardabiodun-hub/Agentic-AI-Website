@@ -40,8 +40,16 @@ class ObservationRow(Base):
     evidence_ref: Mapped[str] = mapped_column(String(300))
 
 
+def normalize_database_url(database_url: str) -> str:
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return database_url
+
+
 def create_session_factory(database_url: str) -> async_sessionmaker[AsyncSession]:
-    engine = create_async_engine(database_url, future=True)
+    engine = create_async_engine(normalize_database_url(database_url), future=True)
     return async_sessionmaker(engine, expire_on_commit=False)
 
 
@@ -65,7 +73,7 @@ async def create_test_session() -> AsyncIterator[AsyncSession]:
 @asynccontextmanager
 async def create_persistent_session(database_url: str) -> AsyncIterator[AsyncSession]:
     """Create a session backed by a durable database and initialize its schema."""
-    engine = create_async_engine(database_url, future=True)
+    engine = create_async_engine(normalize_database_url(database_url), future=True)
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     factory = async_sessionmaker(engine, expire_on_commit=False)

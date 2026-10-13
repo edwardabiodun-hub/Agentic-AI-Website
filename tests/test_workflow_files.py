@@ -10,6 +10,15 @@ def test_ci_workflow_checks_code_and_schema() -> None:
     assert "alembic check" in workflow
 
 
+def test_ci_migrates_fresh_schema_before_alembic_check() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    upgrade = workflow.index("uv run alembic upgrade head")
+    check = workflow.index("uv run alembic check")
+
+    assert upgrade < check
+    assert "DATABASE_URL: sqlite:///./ci-seo-engine.db" in workflow
+
+
 def test_weekly_workflow_is_scheduled_and_non_deploying() -> None:
     workflow = (ROOT / ".github" / "workflows" / "weekly-seo.yml").read_text(encoding="utf-8")
     assert "0 13 * * 1" in workflow

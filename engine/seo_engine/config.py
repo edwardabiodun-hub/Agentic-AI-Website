@@ -18,11 +18,17 @@ class Settings(BaseSettings):
     github_base_branch: str = "main"
     gsc_property: str = ""
     ga4_property_id: str = ""
+    google_application_credentials: str = ""
+    google_service_account_json: SecretStr | None = None
     clarity_project_id: str = ""
     clarity_api_token: SecretStr | None = None
     firecrawl_api_key: SecretStr | None = None
     dataforseo_login: SecretStr | None = None
     dataforseo_password: SecretStr | None = None
+    seo_keywords: str = ""
+    dataforseo_location_code: int = 2840
+    dataforseo_language_code: str = "en"
+    dataforseo_device: str = "desktop"
     openai_api_key: SecretStr | None = None
     openai_model: str = "gpt-4.1-mini"
 
