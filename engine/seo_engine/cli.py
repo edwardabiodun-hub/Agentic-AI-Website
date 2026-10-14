@@ -18,10 +18,14 @@ def build_cli() -> typer.Typer:
         """Print a local health response."""
         typer.echo("ok")
 
-    def execute_weekly(run_date: str | None, fixture: bool) -> None:
+    def execute_weekly(run_date: str | None, fixture: bool, propose_pr: bool = False) -> None:
         parsed_date = date.fromisoformat(run_date) if run_date else None
-        summary = asyncio.run(run_weekly(Settings.load(), parsed_date, fixture_mode=fixture))
+        summary = asyncio.run(
+            run_weekly(Settings.load(), parsed_date, fixture_mode=fixture, propose_pr=propose_pr)
+        )
         typer.echo(json.dumps(summary.model_dump(mode="json"), indent=2))
+        if summary.status != "complete":
+            raise typer.Exit(code=1)
 
     @app.command()
     def collect(
@@ -51,9 +55,12 @@ def build_cli() -> typer.Typer:
     def run_weekly_command(
         run_date: str | None = typer.Option(None, help="Inclusive end date, YYYY-MM-DD."),
         fixture: bool = typer.Option(False, help="Use deterministic local provider fixtures."),
+        propose_pr: bool = typer.Option(
+            False, help="Create a reviewed draft PR for a valid opportunity."
+        ),
     ) -> None:
         """Execute the complete weekly workflow."""
-        execute_weekly(run_date, fixture)
+        execute_weekly(run_date, fixture, propose_pr)
 
     return app
 

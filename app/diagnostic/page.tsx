@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Breadcrumbs, PageHero, SectionNav } from "../../components/SiteParts";
+import { seoMetadata } from "../../content/seo";
 
-export const metadata = {
+export const metadata = seoMetadata("/diagnostic", {
   title: "Business Independence Diagnostic",
   description:
     "A focused two-week assessment of the dependencies, operating costs, and management changes required to reduce owner involvement.",
-};
+});
 
 const costAreas = [
   ["Founder intervention time", "Hours absorbed by recurring approvals, escalation, reporting, and exception handling."],

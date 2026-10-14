@@ -12,10 +12,11 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./seo_engine.db"
     site_id: str = "demo-site"
     site_url: AnyHttpUrl = "https://example.com/"
-    target_site_root: Path = Path("site")
+    target_site_root: Path = Path(".")
     github_owner: str = ""
     github_repository: str = ""
     github_base_branch: str = "main"
+    github_token: SecretStr | None = None
     gsc_property: str = ""
     ga4_property_id: str = ""
     google_application_credentials: str = ""

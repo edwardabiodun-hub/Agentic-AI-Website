@@ -8,7 +8,7 @@ from seo_engine.github_delivery import GitHubDelivery
 async def test_github_delivery_creates_branch_commit_and_draft_pr() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.method == "GET":
-            return httpx.Response(200, json={"object": {"sha": "base-sha"}})
+            return httpx.Response(200, json={"object": {"sha": "base-sha"}, "sha": "original-sha"})
         if request.url.path.endswith("/git/refs"):
             return httpx.Response(201, json={"object": {"sha": "branch-sha"}})
         if request.url.path.endswith("/pulls"):

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Breadcrumbs, PageHero } from "../../components/SiteParts";
 import { categories, resources } from "../../content/resources";
+import { seoMetadata } from "../../content/seo";
 
-export const metadata = {
+export const metadata = seoMetadata("/founder-resources", {
   title: "Insights",
   description: "Videos and practical guides for building a less owner-dependent business.",
-};
+});
 
 export default function Insights() {
   return (

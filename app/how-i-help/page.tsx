@@ -1,9 +1,10 @@
 import { Breadcrumbs, DiagnosticCta, PageHero, SectionNav } from "../../components/SiteParts";
+import { seoMetadata } from "../../content/seo";
 
-export const metadata = {
+export const metadata = seoMetadata("/how-i-help", {
   title: "Business Outcomes",
   description: "Reduce owner dependency, improve executive decisions, and automate recurring operational work.",
-};
+});
 
 const outcomes = [
   {

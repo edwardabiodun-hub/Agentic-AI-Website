@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { seoMetadata } from "../../content/seo";
 
 /* vinext serves this already-optimized local portrait directly. */
 /* eslint-disable @next/next/no-img-element */
@@ -6,11 +7,11 @@ import Link from "next/link";
 const eddieLinkedInUrl = "https://www.linkedin.com/in/edward-abiodun-09600a10/";
 const macLinkedInUrl = "https://www.linkedin.com/in/macdonald-mide-madariola/";
 
-export const metadata = {
+export const metadata = seoMetadata("/about", {
   title: "About Us",
   description:
     "Meet the people behind RunRate Advisory, a business operations and systems advisory firm helping companies build clearer decisions and stronger operating systems.",
-};
+});
 
 const capabilities = [
   {

@@ -34,6 +34,12 @@ class RunRepository:
             )
         )
 
+    async def state(self, run_id: UUID) -> tuple[str, list[str]]:
+        row = await self.session.get(RunRow, str(run_id))
+        if row is None:
+            raise ValueError(f"unknown run: {run_id}")
+        return row.status, row.errors or []
+
     async def finish(self, run_id: UUID, status: str, errors: list[str]) -> None:
         row = await self.session.get(RunRow, str(run_id))
         if row is None:
@@ -62,3 +68,18 @@ class ObservationRepository:
         self.session.add_all(rows)
         await self.session.commit()
         return len(rows)
+
+    async def list_for_run(self, run_id: UUID) -> list[NormalizedObservation]:
+        rows = (await self.session.scalars(
+            select(ObservationRow).where(ObservationRow.run_id == str(run_id))
+        )).all()
+        return [
+            NormalizedObservation(
+                source=row.source,
+                observed_at=row.observed_at,
+                dimensions=row.dimensions,
+                metrics=row.metrics,
+                evidence_ref=row.evidence_ref,
+            )
+            for row in rows
+        ]

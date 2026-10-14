@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 from dataclasses import dataclass
 
 import httpx
@@ -50,9 +51,19 @@ class GitHubDelivery:
         )
         return branch_name if response.status_code == 201 else branch_name
 
+    async def base_sha(self, base_branch: str) -> str:
+        response = await self._request("GET", f"{self.repo_path}/git/ref/heads/{base_branch}")
+        return response.json()["object"]["sha"]
+
     async def commit_files(self, branch_name: str, changes: list[FileChange], message: str) -> str:
         last_sha = ""
         for change in changes:
+            current = await self._request("GET", f"{self.repo_path}/contents/{change.path}")
+            current_payload = current.json()
+            if change.original_sha256 and current_payload.get("content"):
+                original = base64.b64decode(current_payload["content"])
+                if hashlib.sha256(original).hexdigest() != change.original_sha256:
+                    raise RuntimeError("GitHub file has changed since SEO proposal generation")
             response = await self._request(
                 "PUT",
                 f"{self.repo_path}/contents/{change.path}",
@@ -60,6 +71,7 @@ class GitHubDelivery:
                     "message": message,
                     "content": base64.b64encode(change.content.encode()).decode(),
                     "branch": branch_name,
+                    "sha": current_payload["sha"],
                 },
             )
             last_sha = response.json().get("content", {}).get("sha", last_sha)
