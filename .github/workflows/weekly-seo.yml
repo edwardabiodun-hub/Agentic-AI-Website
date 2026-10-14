@@ -20,7 +20,8 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   weekly-run:
@@ -53,8 +54,14 @@ jobs:
         shell: bash
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY: Agentic-AI-Website
           SITE_ID: ${{ vars.SITE_ID }}
           SITE_URL: ${{ vars.SITE_URL }}
+          TARGET_SITE_ROOT: .
           GSC_PROPERTY: ${{ vars.GSC_PROPERTY }}
           GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
           SEO_KEYWORDS: ${{ vars.SEO_KEYWORDS }}
@@ -75,11 +82,12 @@ jobs:
             args+=(--fixture)
           fi
           if [ "${{ inputs.fixture }}" = "true" ] || [ -n "${{ inputs.end_date }}" ]; then
-            uv run seo-engine run-weekly "${args[@]}"
+            uv run seo-engine run-weekly "${args[@]}" --propose-pr
           else
-            uv run seo-engine run-weekly
+            uv run seo-engine run-weekly --propose-pr
           fi
       - name: Upload briefs and run artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: weekly-seo-artifacts

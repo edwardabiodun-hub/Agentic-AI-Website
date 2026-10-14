@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "../../components/SiteParts";
 import { AssessmentFlow } from "./AssessmentFlow";
 import "./assessment.css";
+import { seoMetadata } from "../../content/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = seoMetadata("/assessment", {
   title: "Business Independence Assessment",
   description:
     "Identify where owner intervention, operating practices, or delayed information constrain business independence.",
-};
+});
 
 export default function AssessmentPage() {
   return (

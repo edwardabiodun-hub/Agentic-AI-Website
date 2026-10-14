@@ -8,6 +8,7 @@ import { SiteAnalyticsTracker } from "../components/SiteAnalyticsTracker";
 import { GoogleAnalytics } from "../components/GoogleAnalytics";
 import { MicrosoftClarity } from "../components/MicrosoftClarity";
 import "./globals.css";
+import { seoMetadata } from "../content/seo";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -15,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["500", "700"],
 });
 
-export const metadata: Metadata = {
+export const metadata: Metadata = seoMetadata("/", {
   title: {
     default: "RunRate Advisory | Business Independence & Decision Systems",
     template: "%s | RunRate Advisory",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     "Helping owner-led businesses reduce founder dependency, improve executive decisions, and remove recurring operational friction.",
   openGraph: { images: ["/og.png"], type: "website" },
   twitter: { card: "summary_large_image", images: ["/og.png"] },
-};
+});
 
 const outcomeNav = [
   ["/how-i-help#dependency", "Reduce Owner Dependency"],

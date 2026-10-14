@@ -1,11 +1,17 @@
 audiences:
-  - website visitors seeking practical SEO growth
+  - founders and owner-led B2B businesses
+  - CEOs and CFOs facing operating complexity
 locations:
   - United States
 priority_offerings:
-  - seo
+  - business independence
+  - owner dependency
+  - executive reporting
+  - operating systems
+  - automation
 conversions:
-  - lead_form
+  - assessment completion
+  - qualified contact inquiry
 approved_archetypes:
   - service
   - guide
@@ -13,8 +19,11 @@ approved_archetypes:
   - comparison
 excluded_paths:
   - /admin
+  - /api
+  - /contact/thank-you
+  - /privacy
 proof_requirements:
   - evidence reference
 change_limits:
-  max_files: 5
+  max_files: 1
   max_lines: 250

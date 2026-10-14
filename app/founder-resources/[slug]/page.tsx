@@ -4,15 +4,16 @@ import type { Metadata } from "next";
 import { resourceArticles } from "../../../content/resource-articles";
 import { categories, resources } from "../../../content/resources";
 import { Breadcrumbs } from "../../../components/SiteParts";
+import { seoMetadata } from "../../../content/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const resource = resources.find((item) => item.slug === slug);
   if (!resource) return {};
-  return {
+  return seoMetadata(`/founder-resources/${slug}`, {
     title: resource.title,
     description: resource.summary,
-  };
+  });
 }
 
 export default async function ResourcePage({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,10 +1,11 @@
 import { Breadcrumbs, PageHero } from "../../components/SiteParts";
 import ContactForm from "./ContactForm";
+import { seoMetadata } from "../../content/seo";
 
-export const metadata = {
+export const metadata = seoMetadata("/contact", {
   title: "Start a Conversation",
   description: "Discuss a recurring owner dependency and determine whether a Business Independence Diagnostic is appropriate.",
-};
+});
 
 export default function Contact() {
   return (
